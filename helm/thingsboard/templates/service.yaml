@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tb.fullname" . }}
+  labels:
+    {{- include "tb.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: 9090
+      targetPort: 9090
+      protocol: TCP
+      name: https
+    - port: 1883
+      targetPort: 1883
+      protocol: TCP
+      name: mqtt
+    - port: 7070
+      targetPort: 7070
+      protocol: TCP
+      name: general
+    - port: 5683
+      targetPort: 5683
+      protocol: UDP
+      name: udp
+  selector:
+    {{- include "tb.selectorLabels" . | nindent 4 }}

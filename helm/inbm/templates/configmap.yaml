@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adapter-cfg
+  namespace: default
+data:
+  adapter.cfg: |
+    { "cloud": "thingsboard", "config": {
+        "mqtt": {
+            "username": "9lNuwH8V6UZntfPHI0r3",
+            "password": "",
+            "hostname": "10.233.45.26",
+            "port": 1883
+        },
+        "event": {
+            "pub": "v1/devices/me/telemetry",
+            "format": "{ \"ts\": \"{ts}\", \"values\": {\"event\": \"{value}\"}}"
+        },
+        "telemetry": {
+            "pub": "v1/devices/me/telemetry",
+            "format": "{ \"ts\": \"{ts}\", \"values\": {\"{key}\": \"{value}\"}}"
+        },
+        "attribute": {
+            "pub": "v1/devices/me/attributes",
+            "format": "{ \"{key}\": \"{value}\" }"
+        },
+        "method": {
+            "pub": "v1/devices/me/rpc/response/{request_id}",
+            "format": "\"{timestamp}: {message}\"",
+            "sub": "v1/devices/me/rpc/request/+",
+            "parse": {
+                "single": {
+                    "request_id": {
+                        "regex": "v1\\/devices\\/me\\/rpc\\/request\\/([0-9]+)",
+                        "group": 1
+                    },
+                    "method": {
+                        "path": "method"
+                    },
+                    "args": {
+                        "path": "params"
+                    }
+                }
+            }
+        }
+     }
+    }
+

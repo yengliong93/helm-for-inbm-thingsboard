@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "inbm.fullname" . }}
+  labels:
+    {{- include "inbm.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "inbm.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "inbm.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: http_proxy
+              value: http://proxy-dmz.intel.com:911
+            - name: https_proxy
+              value: http://proxy-dmz.intel.com:912
+            - name: no_proxy
+              value: intel.com,.intel.com,10.0.0.0/8,192.168.0.0/16,localhost,.local,127.0.0.0/8,134.134.0.0/16
+          volumeMounts:
+            - name: sysfscgroup
+              mountPath: /sys/fs/cgroup
+            - name: varrun
+              mountPath: /docker.sock
+              subPath: docker.sock
+            - name: adapter-cfg
+              mountPath: /src/adapter.cfg
+              subPath: adapter.cfg
+            - mountPath: /run
+              name: tmp
+              subPath: run
+            - mountPath: /run/lock
+              name: tmp
+              subPath: run-lock
+            - mountPath: /tmp
+              name: tmp
+              subPath: tmp
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: sysfscgroup
+          hostPath:
+            path: /sys/fs/cgroup
+        - name: varrun
+          hostPath:
+            path: /var/run
+        - name: adapter-cfg
+          configMap:
+            name: adapter-cfg
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 500Mi
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
