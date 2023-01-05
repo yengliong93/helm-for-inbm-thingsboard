@@ -1,11 +1,14 @@
-# helm-for-inbm-thingsboard
+# Helm-for-INBM-Thingsboard
+## Table of Contents
+- [Installation](#Installation)
+- [Build INBM Image](#Build-INBM-Image)
 
 There are two helm charts in the helm folder.
 1. INBM
    - Reference: https://github.com/intel/intel-inb-manageability
 2. Thingsboard
 
-# Installation
+## Installation
 1. Ensure that K8s cluster and Helm are installed on the system.
 2. Create Thingsboard storage. 
    ```
@@ -62,3 +65,40 @@ The username and password as below:
 14. Go to Dashboard > INB-Intel Manageability Devices > Open dashboard. Check the dashboard.
     <img src="images/tb_dashboard2.JPG" />
     <img src="images/tb_dashboard.JPG" />
+
+## Build INBM Image
+1. Checkout INBM
+```
+git clone https://github.com/intel/intel-inb-manageability.git
+cd intel-inb-manageability/
+git checkout v3.0.14
+cd manageability-docker/
+```
+2. Run script to build thingsboard container. 
+
+   `./build-thingsboard-container.sh`
+
+NOTE: If it failed to resolve proxy, try steps below.
+
+```
+sudo rm /etc/systemd/system/docker.service.d/im*
+sudo nano /etc/systemd/system/docker.service.d/http-proxy.conf
+```
+3. Once build complete, unzip the output and update thingsboard conf file.
+```
+cp output/inb_thingsboard_container.zip .
+unzip -o inb_thingsboard_container.zip
+```
+Update thingsboard_conf_file 
+```
+TB_IP_ADDR=
+TB_PORT=
+DEVICE_TOKEN=
+TLS=n
+TLS_PEM_FILE_LOCATION=
+x509_DEVICE_CERT=
+```
+
+5. Run the script to build inb container.
+
+   `sudo ./run.sh`
