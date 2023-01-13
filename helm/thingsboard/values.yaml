@@ -70,7 +70,14 @@ autoscaling:
 nodeSelector: {}
 
 tolerations:
-  - key: node-role.kubernetes.io/master
-    effect: NoSchedule
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+    operator: Exists
 
-affinity: {}
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: node-role.kubernetes.io/master
+              operator: Exists
